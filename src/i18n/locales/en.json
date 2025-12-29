@@ -3,7 +3,8 @@
     "typeMessage": "Type a message...",
     "send": "Send",
     "online": "Online users",
-    "offline": "Offline"
+    "offline": "Offline",
+    "totalUsers":"Total users"
   },
   "game": {
     "playRandom": "Play Random",

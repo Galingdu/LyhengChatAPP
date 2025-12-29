@@ -12,6 +12,7 @@ export default function Register() {
   });
   const [avatar, setAvatar] = useState(null);
   const [error, setError] = useState("");
+  const [loading,setLoading] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,6 +20,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true)
 
     if (form.password !== form.confirm) {
       return setError("Passwords do not match");
@@ -35,6 +37,8 @@ export default function Register() {
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Register failed");
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -146,15 +150,24 @@ export default function Register() {
       />
     </div>
 
-    {/* Button */}
-    <button
-      type="submit"
-      className="w-full bg-blue-600 hover:bg-blue-700
-                 text-white font-medium py-2.5 rounded-lg
-                 transition duration-200 shadow-md"
-    >
-      Register
-    </button>
+   {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full flex items-center justify-center gap-2
+                     text-white font-medium py-2.5 rounded-lg
+                     transition duration-200 shadow-md
+                     ${
+                       loading
+                         ? "bg-blue-400 cursor-not-allowed"
+                         : "bg-blue-600 hover:bg-blue-700"
+                     }`}
+        >
+          {loading && (
+            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          )}
+          {loading ? "Registering..." : "Register"}
+        </button>
 
     {/* Footer */}
     <p className="text-sm text-center text-gray-500">

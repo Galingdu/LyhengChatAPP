@@ -3,7 +3,8 @@
     "typeMessage": "វាយសារនៅទីនេះ...",
     "send": "ផ្ញើរ",
     "online": "ចំនួនអនឡាញ",
-    "offline": "ក្រៅបណ្ដាញ"
+    "offline": "ក្រៅបណ្ដាញ",
+     "totalUsers":"ចំនួនមនុស្សសរុប"
   },
   "game": {
     "playRandom": "លេងចៃដន្យ",
