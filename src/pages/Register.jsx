@@ -39,67 +39,135 @@ export default function Register() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-xl shadow-md w-96 space-y-4"
-      >
-        <h2 className="text-xl font-bold text-center">Register</h2>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <input
-          name="username"
-          placeholder="Username"
-          className="w-full border rounded px-3 py-2"
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="w-full border rounded px-3 py-2"
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="w-full border rounded px-3 py-2"
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="password"
-          name="confirm"
-          placeholder="Confirm Password"
-          className="w-full border rounded px-3 py-2"
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setAvatar(e.target.files[0])}
-        />
-
-        <button className="w-full bg-blue-600 text-white py-2 rounded">
-          Register
-        </button>
-
-        <p className="text-sm text-center">
-          Already have account?{" "}
-          <Link to="/login" className="text-blue-600">
-            Login
-          </Link>
-        </p>
-      </form>
+   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+  <form
+    onSubmit={handleSubmit}
+    className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 space-y-6"
+  >
+    {/* Header */}
+    <div className="text-center space-y-2">
+      <div className="mx-auto w-12 h-12 bg-blue-600 text-white flex items-center justify-center rounded-full text-xl">
+        📝
+      </div>
+      <h2 className="text-2xl font-bold text-gray-800">Create Account</h2>
+      <p className="text-sm text-gray-500">
+        Join us and start chatting
+      </p>
     </div>
+
+    {/* Error */}
+    {error && (
+      <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
+        {error}
+      </div>
+    )}
+
+    {/* Username */}
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        Username
+      </label>
+      <input
+        name="username"
+        placeholder="Your username"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5
+                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                   outline-none transition"
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Email */}
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        Email
+      </label>
+      <input
+        type="email"
+        name="email"
+        placeholder="you@example.com"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5
+                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                   outline-none transition"
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Password */}
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        Password
+      </label>
+      <input
+        type="password"
+        name="password"
+        placeholder="••••••••"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5
+                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                   outline-none transition"
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Confirm Password */}
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        Confirm Password
+      </label>
+      <input
+        type="password"
+        name="confirm"
+        placeholder="••••••••"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5
+                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                   outline-none transition"
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Avatar Upload */}
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1">
+        Avatar (optional)
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setAvatar(e.target.files[0])}
+        className="block w-full text-sm text-gray-500
+                   file:mr-4 file:py-2 file:px-4
+                   file:rounded-lg file:border-0
+                   file:bg-blue-50 file:text-blue-600
+                   hover:file:bg-blue-100 cursor-pointer"
+      />
+    </div>
+
+    {/* Button */}
+    <button
+      type="submit"
+      className="w-full bg-blue-600 hover:bg-blue-700
+                 text-white font-medium py-2.5 rounded-lg
+                 transition duration-200 shadow-md"
+    >
+      Register
+    </button>
+
+    {/* Footer */}
+    <p className="text-sm text-center text-gray-500">
+      Already have an account?{" "}
+      <Link
+        to="/login"
+        className="text-blue-600 font-medium hover:underline"
+      >
+        Login
+      </Link>
+    </p>
+  </form>
+</div>
+
   );
 }

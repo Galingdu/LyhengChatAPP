@@ -103,6 +103,29 @@ export default function Game() {
   };
 
   return (
+  <div>
+      <div className="m-5 ms-10 max-w-xl rounded-xl border border-yellow-300 bg-yellow-50 p-5 text-yellow-900 shadow-sm">
+  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+    🎮 Game Rules
+  </h3>
+
+  <ul className="list-disc list-inside space-y-1 text-sm">
+    <li>Two players are matched randomly.</li>
+    <li>Players take turns placing <strong>X</strong> or <strong>O</strong>.</li>
+    <li>The first player to align 3 symbols wins.</li>
+    <li>If all cells are filled with no winner, the game is a draw.</li>
+    <li>
+      <strong>Leaving, refreshing, or closing the page counts as a loss.</strong>
+    </li>
+    <li>Private chat is available only during the game.</li>
+    <li>You can play again if both players agree.</li>
+  </ul>
+
+  <p className="mt-3 text-xs text-yellow-700">
+    ⚠️ This is a casual game. Chat and game data are not saved.
+  </p>
+</div>
+
     <div className="flex justify-center mt-10 px-4">
       <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6">
 
@@ -212,5 +235,6 @@ export default function Game() {
 
       </div>
     </div>
+  </div>
   );
 }

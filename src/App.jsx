@@ -20,7 +20,11 @@ function App() {
             </ProtectedRoute>
           }
         />
-          <Route path="/game" element={<Game/>} />
+          <Route path="/game" element={
+            <ProtectedRoute>
+              <Game/>
+            </ProtectedRoute>
+          } />
           <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
