@@ -157,8 +157,8 @@ export default function Chat() {
     <div className="h-screen flex flex-col bg-gray-100">
 
       {/* HEADER */}
-      <div className="bg-blue-700 text-white p-4">
-        <div className="flex justify-between items-center">
+      <div className="bg-blue-700 text-white p-4 fixed top-0 w-full">
+        <div className="flex justify-between items-center ">
           <div>
             <p className="font-bold text-lg">{t("header.Brand")}</p>
             <p className="text-xs flex items-center gap-1">

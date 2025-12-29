@@ -46,12 +46,12 @@ export default function Register() {
   >
     {/* Header */}
     <div className="text-center space-y-2">
-      <div className="mx-auto w-12 h-12 bg-blue-600 text-white flex items-center justify-center rounded-full text-xl">
-        📝
+      <div className="mx-auto w-15 h-15 bg-blue-600 text-white flex items-center justify-center rounded-full text-xl">
+        <img className="mx-auto w-14 h-14 bg-blue-600 text-white flex items-center justify-center rounded-full text-xl" src="./myPf.jpg" alt="" />
       </div>
       <h2 className="text-2xl font-bold text-gray-800">Create Account</h2>
       <p className="text-sm text-gray-500">
-        Join us and start chatting
+        Join us and start with Lyheng Community.
       </p>
     </div>
 
