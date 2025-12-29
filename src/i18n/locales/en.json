@@ -1,0 +1,19 @@
+{
+  "chat": {
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online users",
+    "offline": "Offline"
+  },
+  "game": {
+    "playRandom": "Play Random",
+    "invite": "Invite to Play",
+    "leftGame": "leave Game",
+    "leftGameAlert": "Leaving the game counts as a loss. Are you sure?"
+  },
+  "header": {
+    "logout": "Logout",
+    "playGame": "Play Game",
+    "Brand": "Lyheng Chat-Community"
+  }
+}
