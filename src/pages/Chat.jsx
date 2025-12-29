@@ -34,6 +34,7 @@ export default function Chat() {
   // ✅ LOAD MY PROFILE (SOURCE OF TRUTH)
   useEffect(() => {
     api.get("/users/me").then(res => setMyProfile(res.data));
+    console.log("meee",myProfile)
   }, []);
 
   // 📥 LOAD CHAT HISTORY
@@ -242,44 +243,56 @@ export default function Chat() {
             </div>
           ) : (
             <div
-              key={msg._id || i}
-              className={`flex gap-3 ${
-                msg.sender?._id === myProfile?._id
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              {msg.sender?._id !== myProfile?._id && (
-                <img
-                  src={getAvatarUrl(msg.sender)}
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
+  key={msg._id || i}
+  className={`flex gap-3 ${
+    msg.sender?._id === myProfile?._id
+      ? "justify-end"
+      : "justify-start"
+  }`}
+>
+  {/* AVATAR (OTHER USER ONLY) */}
+  {msg.sender?._id !== myProfile?._id && (
+    <img
+      src={getAvatarUrl(msg.sender)}
+      className="w-8 h-8 rounded-full mt-1"
+    />
+  )}
 
-              <div className="max-w-xs">
-                <div
-                  className={`rounded-lg ${
-                    msg.image
-                      ? "bg-transparent"
-                      : msg.sender?._id === myProfile?._id
-                      ? "bg-blue-600 text-white px-3 py-2"
-                      : "bg-white px-3 py-2"
-                  }`}
-                >
-                  {msg.text && <p>{msg.text}</p>}
-                  {msg.image && (
-                    <img
-                      src={`${apiUrl}/uploads/chats/${msg.image}`}
-                      className="rounded-lg"
-                    />
-                  )}
-                </div>
+  <div className="max-w-xs">
+    {/* USERNAME (OTHER USER ONLY) */}
+    {msg.sender?._id !== myProfile?._id && (
+      <p className="text-xs font-semibold text-gray-700 mb-1">
+        {msg.sender?.username}
+      </p>
+    )}
 
-                <p className="text-xs text-gray-500 mt-1">
-                  {formatTime(msg.createdAt)}
-                </p>
-              </div>
-            </div>
+    {/* MESSAGE BUBBLE */}
+    <div
+      className={`rounded-lg ${
+        msg.image
+          ? "bg-transparent"
+          : msg.sender?._id === myProfile?._id
+          ? "bg-blue-600 text-white px-3 py-2"
+          : "bg-white px-3 py-2"
+      }`}
+    >
+      {msg.text && <p>{msg.text}</p>}
+
+      {msg.image && (
+        <img
+          src={`${apiUrl}/uploads/chats/${msg.image}`}
+          className="rounded-lg max-w-full"
+        />
+      )}
+    </div>
+
+    {/* TIME */}
+    <p className="text-xs text-gray-500 mt-1">
+      {formatTime(msg.createdAt)}
+    </p>
+  </div>
+</div>
+
           )
         )}
 
