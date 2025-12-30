@@ -2,9 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import { connectSocket } from "../services/socket";
 import { Link, useNavigate } from "react-router-dom";
-import { FaGamepad, FaSignOutAlt } from "react-icons/fa";
+import { FaGamepad, FaSignOutAlt,FaImage } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
-import { MdUploadFile } from "react-icons/md";
 import notificationSound from "../assets/notification.mp3";
 import joinSound from "../assets/join.mp3";
 import { useTranslation } from "react-i18next";
@@ -282,7 +281,7 @@ const sendMessage = async () => {
 
 
       {/* MESSAGES */}
-      <div className="flex-1 overflow-y-auto p-4 pt-24 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 pt-24 space-y-4 my-10">
         {messages.map((msg, i) =>
           msg.system ? (
             <p key={i} className="text-center text-xs text-gray-400 italic">
@@ -346,7 +345,8 @@ const sendMessage = async () => {
         <div ref={bottomRef} />
       </div>
 
-      {/* IMAGE PREVIEW */}
+  <div className="fixed bottom-0 w-full">
+        {/* IMAGE PREVIEW */}
     {imagePreview && (
   <div className="p-3 space-y-2">
     <div className="flex items-center gap-3">
@@ -404,7 +404,7 @@ const sendMessage = async () => {
           onClick={() => fileInputRef.current.click()}
           className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
         >
-          <MdUploadFile className="text-gray-400" size={22} />
+          <FaImage className="text-gray-400" size={22} />
       </button>
 
 
@@ -432,6 +432,7 @@ const sendMessage = async () => {
           <FiSend size={20} />   {/* React icon instead of emoji */}
       </button>
       </div>
+  </div>
     </div>
   );
 

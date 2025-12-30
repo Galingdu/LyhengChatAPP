@@ -252,7 +252,7 @@ socketRef.current.on("rematchStarted", ({ board, turn, players }) => {
             onClick={sendChat}
             className="bg-red-500 text-white px-4 rounded-lg shadow-lg transition duration-300 ease-in-out hover:bg-red-600 transform hover:scale-105"
           >
-            Send
+            {t("chat.send")}
           </button>
       </div>
 
