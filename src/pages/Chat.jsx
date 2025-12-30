@@ -114,7 +114,7 @@ useEffect(() => {
   /* ================= HELPERS ================= */
   const getAvatarUrl = sender => {
   if (!sender?.avatar) return "/default.jpg";
-  return `${apiUrl}/uploads/avatars/${sender.avatar}`;
+  return `${sender.avatar}`;
 };
 
   const formatTime = date =>
@@ -329,7 +329,7 @@ const sendMessage = async () => {
                   {msg.text && <p>{msg.text}</p>}
                   {msg.image && (
                     <img
-                      src={`${apiUrl}/uploads/chats/${msg.image}`}
+                      src={msg.image}
                       className="rounded-xl max-w-full"
                       alt="រលុបហើយអត់លុយបង់SERVER."
                     />

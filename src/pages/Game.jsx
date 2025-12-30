@@ -8,43 +8,49 @@ export default function Game() {
   const navigate = useNavigate();
   const socketRef = useRef(null);
 
-  const [status, setStatus] = useState("matching");
+  const [me, setMe] = useState(null);
+  const [players, setPlayers] = useState(null);
+  const [playAgainRequested, setPlayAgainRequested] = useState(false);
   const [roomId, setRoomId] = useState(null);
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState(null);
   const [mySymbol, setMySymbol] = useState(null);
+  const [phase, setPhase] = useState("matching");
+// matching | playing | ended
+
+
   const [result, setResult] = useState(null);
-  const [winningLine, setWinningLine] = useState([]);
-  const [playAgainRequested, setPlayAgainRequested] = useState(false);
+  const [winnerUserId, setWinnerUserId] = useState(null);
+  const [showResultPopup, setShowResultPopup] = useState(false);
 
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
 
-  const apiUrl = import.meta.env.VITE_BASE_URL;
-
-  // 🔐 Load profile
+  // 🔐 LOAD ME
   useEffect(() => {
-    api.get("/users/me");
+    api.get("/users/me").then(res => setMe(res.data));
   }, []);
 
-  // 🔌 Socket
+  // 🔌 SOCKET
   useEffect(() => {
+    if (!me) return;
+
     const token = localStorage.getItem("token");
     socketRef.current = connectSocket(token);
 
     socketRef.current.emit("playRandom");
 
     socketRef.current.on("waiting", () => {
-      setStatus("matching");
+      setPhase("matching");
     });
 
     socketRef.current.on("matchFound", ({ roomId, players, turn }) => {
       setRoomId(roomId);
+      setPlayers(players);
       setTurn(turn);
-      setStatus("playing");
+      setPhase("playing");
 
-      const myId = socketRef.current.id;
-      setMySymbol(players.X === myId ? "X" : "O");
+      setMySymbol(players.X.id === me._id ? "X" : "O");
     });
 
     socketRef.current.on("gameUpdate", ({ board, turn }) => {
@@ -52,189 +58,288 @@ export default function Game() {
       setTurn(turn);
     });
 
-    socketRef.current.on("gameOver", ({ result, winningLine }) => {
+    socketRef.current.on("gameOver", ({ result, winnerUserId }) => {
       setResult(result);
-      setWinningLine(winningLine || []);
-      setStatus("ended");
-    });
-
-    socketRef.current.on("rematchStarted", ({ board, turn }) => {
-      setBoard(board);
-      setTurn(turn);
-      setResult(null);
-      setWinningLine([]);
-      setStatus("playing");
-      setPlayAgainRequested(false);
+      setWinnerUserId(winnerUserId || null);
+      setPhase("ended");
+      setShowResultPopup(true);
     });
 
     socketRef.current.on("gameChat", (msg) => {
       setChatMessages(prev => [...prev, msg]);
     });
 
-    return () => socketRef.current.disconnect();
-  }, []);
+socketRef.current.on("rematchStarted", ({ board, turn, players }) => {
+  // 🔴 freeze UI
+  setPhase("matching");
 
-  // 🎮 Move
+  // 🔄 reset result-related UI
+  setResult(null);
+  setWinnerUserId(null);
+  setShowResultPopup(false);
+  setPlayAgainRequested(false);
+
+  // 🔄 update game data
+  setBoard(board);
+  setPlayers(players);
+  setTurn(turn);
+
+  // 🔁 recompute my symbol
+  const newSymbol = players.X.id === me._id ? "X" : "O";
+  setMySymbol(newSymbol);
+
+  // ✅ now safely enter game
+  setPhase("playing");
+});
+
+
+    return () => socketRef.current.disconnect();
+  }, [me]);
+
   const handleMove = (index) => {
-    if (status !== "playing") return;
+    if (phase !== "playing") return;
     if (board[index]) return;
     if (turn !== mySymbol) return;
 
     socketRef.current.emit("makeMove", { roomId, index });
   };
 
-  // 💬 Chat
   const sendChat = () => {
     if (!chatInput.trim()) return;
     socketRef.current.emit("gameChat", { roomId, message: chatInput });
     setChatInput("");
   };
 
-  // 🔁 Play again
   const handlePlayAgain = () => {
-    socketRef.current.emit("playAgain", { roomId });
-    setPlayAgainRequested(true);
-  };
+  socketRef.current.emit("playAgain", { roomId });
+  setPlayAgainRequested(true);
+};
 
-  const handleLeave = () => {
-    if (confirm(t("game.leftGameAlert"))) {
-      navigate("/chat");
-    }
-  };
 
   return (
-  <div>
-      <div className="m-5 ms-10 max-w-xl rounded-xl border border-yellow-300 bg-yellow-50 p-5 text-yellow-900 shadow-sm">
-  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-    🎮 Game Rules
-  </h3>
+    <div className="flex justify-center mt-10">
+      <div className="bg-white max-w-3xl w-full rounded-xl shadow-lg p-6">
 
-  <ul className="list-disc list-inside space-y-1 text-sm">
-    <li>Two players are matched randomly.</li>
-    <li>Players take turns placing <strong>X</strong> or <strong>O</strong>.</li>
-    <li>The first player to align 3 symbols wins.</li>
-    <li>If all cells are filled with no winner, the game is a draw.</li>
-    <li>
-      <strong>Leaving, refreshing, or closing the page counts as a loss.</strong>
-    </li>
-    <li>Private chat is available only during the game.</li>
-    <li>You can play again if both players agree.</li>
-  </ul>
-
-  <p className="mt-3 text-xs text-yellow-700">
-    ⚠️ This is a casual game. Chat and game data are not saved.
-  </p>
+       {/* HEADER */}
+<div className="flex justify-between items-center mb-4 p-4 bg-gradient-to-r from-red-400 to-orange-400 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105">
+  <h2 className="md:text-3xl text-2xl font-bold text-white animate-bounce">
+    🎮 Tic Tac Toe
+  </h2>
+  <button
+    onClick={() => navigate("/chat")}
+    className="bg-white text-red-500 px-4 py-2 rounded-lg shadow transition-colors duration-300 hover:bg-red-500 hover:text-white transform hover:scale-105"
+  >
+    {t("game.leftGame")}
+  </button>
 </div>
 
-    <div className="flex justify-center mt-10 px-4">
-      <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">🎮 Tic Tac Toe</h2>
-          <button
-            onClick={handleLeave}
-            className="bg-red-500 text-white px-3 py-1 rounded"
-          >
-            {t("game.leftGame")}
-          </button>
-        </div>
+       {/* PLAYER VS */}
 
-        {/* STATUS */}
+{players && (
+  <div className="flex justify-between items-center mb-4">
+    <div className="player-card">
+   <PlayerCard
+  player={players.X}
+  active={phase === "playing" && turn === "X"}
+  symbol="X"
+/>
+    </div>
+    
+    <div className=" flex items-center justify-center gap-1 flex-col">
+      <span className="result-icon">⚔️</span>
+      {result === "draw" && <h2>🤝 Draw</h2>}
+      {result === "opponent_left" && <h2>🚪 Opponent Left</h2>}
+      {result !== "draw" && result !== null && result !== "opponent_left" && (
+        winnerUserId === me._id
+          ? <h2>🎉 You Win!</h2>
+          : <h2>😞 You Lose</h2>
+      )}
+         {/* TURN */}
         <div className="text-center mb-4">
-          {status === "matching" && (
-            <p className="text-gray-500 animate-pulse">Finding opponent…</p>
-          )}
+         
 
-          {status === "playing" && (
-            <span className={`px-4 py-1 rounded-full text-sm font-semibold
-              ${turn === mySymbol ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+          {phase === "playing" && turn && mySymbol && (
+            <span
+              className={`px-4 py-1 rounded-full text-sm font-semibold
+                ${turn === mySymbol
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600"}`}
+            >
               {turn === mySymbol ? "Your Turn" : "Opponent Turn"}
             </span>
           )}
+      </div>
+    </div>
+    
+    <div className="player-card">
+      <PlayerCard
+  player={players.O}
+  active={phase === "playing" && turn === "O"}
+  reverse
+  symbol="O"
+/>
+    </div>
+  </div>
+)}
 
-          {status === "ended" && (
-            <p className="text-xl font-bold mt-2">
-              {result === mySymbol && "🎉 You Win!"}
-              {result === "draw" && "🤝 Draw"}
-              {result !== mySymbol && result !== "draw" && "😞 You Lose"}
+        <div className="flex items-center justify-center mb-5">
+           {phase === "matching" && (
+            <p className="text-gray-500 animate-pulse">
+              Finding opponent…
             </p>
           )}
         </div>
 
-        {/* BOARD */}
-        <div className="grid grid-cols-3 gap-3 mx-auto w-fit">
-          {board.map((cell, i) => {
-            const isWin = winningLine.includes(i);
 
-            return (
+       {/* BOARD */}
+        
+          <div className="grid grid-cols-3 gap-3 mx-auto w-fit">
+            {board.map((cell, i) => (
               <button
                 key={i}
                 onClick={() => handleMove(i)}
-                className={`
-                  w-24 h-24 sm:w-28 sm:h-28
-                  text-4xl font-bold rounded-lg
-                  border flex items-center justify-center
-                  transition-all
-                  ${isWin ? "bg-green-100 text-green-700 scale-105" : "bg-white"}
-                  ${status === "playing" && !cell ? "hover:bg-gray-100" : ""}
-                `}
+                className="cell transition-transform duration-300 ease-in-out hover:scale-102"
               >
                 {cell}
               </button>
-            );
-          })}
-        </div>
-
-        {/* PLAY AGAIN */}
-        {status === "ended" && (
-          <div className="text-center mt-6">
-            <button
-              onClick={handlePlayAgain}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg"
-            >
-              🔁 Play Again
-            </button>
-
-            {playAgainRequested && (
-              <p className="text-sm text-gray-500 mt-2 animate-pulse">
-                Waiting for opponent…
-              </p>
-            )}
+            ))}
+            
           </div>
+
+
+           {phase === "ended" && result !== "opponent_left" && (
+  <div className="text-center mt-5">
+    <button
+      onClick={handlePlayAgain}
+      disabled={playAgainRequested}
+      className={`border border-gray-300 rounded-lg shadow-lg bg-gradient-to-r from-yellow-200 to-red-200 px-4 py-3 transition duration-600 ease-in-out  hover:scale-102
+        ${playAgainRequested
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+        }`}
+    >
+      🔁 Play Again
+    </button>
+
+    {playAgainRequested && result !== "opponent_left" && (
+      <p className="text-sm text-gray-500 mt-2 animate-pulse">
+        Waiting for opponent…
+      </p>
+    )}
+  </div>
         )}
+    
+
 
         {/* CHAT */}
         <div className="mt-6 border-t pt-4">
-          <h3 className="font-semibold mb-2">💬 Private Chat</h3>
-
-          <div className="h-40 overflow-y-auto text-sm space-y-2 mb-2">
+          <div className="h-32 overflow-y-auto text-sm">
             {chatMessages.map((m, i) => (
-              <p key={i}>
-                <strong>{m.sender}:</strong> {m.message}
-              </p>
+              <p key={i}><b>{m.sender}:</b> {m.message}</p>
             ))}
           </div>
 
-          <div className="flex gap-2">
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              className="flex-1 border rounded px-2 py-1"
-              placeholder="Message…"
-              onKeyDown={(e) => e.key === "Enter" && sendChat()}
-            />
-            <button
-              onClick={sendChat}
-              className="bg-blue-600 text-white px-3 rounded"
-            >
-              Send
-            </button>
-          </div>
+         <div className="flex gap-2 mt-2">
+          <input
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
+            className="flex-1 border border-gray-300 focus:outline-none focus:border-yellow-400 rounded-lg shadow-lg bg-gradient-to-r from-yellow-200 to-red-200 px-4 py-3 transition duration-300 ease-in-out transform hover:scale-101"
+            onKeyDown={e => e.key === "Enter" && sendChat()}
+            placeholder="Type your message..."
+          />
+          <button
+            onClick={sendChat}
+            className="bg-red-500 text-white px-4 rounded-lg shadow-lg transition duration-300 ease-in-out hover:bg-red-600 transform hover:scale-105"
+          >
+            Send
+          </button>
+      </div>
+
         </div>
 
-      </div>
+        {/* RESULT POPUP */}
+       {showResultPopup && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+    <div className="bg-gradient-to-br from-yellow-400 to-orange-600 p-6 rounded-xl text-center flex flex-col items-center justify-center gap-4 animate-popup">
+      {result === "draw" && <h2 className="text-2xl text-white">🤝 Draw</h2>}
+      {result === "opponent_left" && <h2 className="text-2xl text-white">🚪 Opponent Left</h2>}
+      {result !== "draw" && result !== "opponent_left" && (
+        winnerUserId === me._id
+          ? <h2 className="text-2xl text-white">🎉 You Win!</h2>
+          : <h2 className="text-2xl text-white">😞 You Lose</h2>
+      )}
+     <div className="flex items-center justify-between gap-2">
+      {result !== "opponent_left" &&( <button
+        onClick={() => setShowResultPopup(false)}
+        className="border border-gray-300 rounded-lg shadow-lg bg-gradient-to-r from-yellow-200 to-red-200 px-4 py-3 transition duration-600 ease-in-out  hover:scale-102"
+      >
+        Close
+      </button>)}
+      {result == "opponent_left" &&( <button
+        onClick={() => navigate("/chat")}
+        className="border border-gray-300 rounded-lg shadow-lg bg-gradient-to-r from-yellow-200 to-red-200 px-4 py-3 transition duration-600 ease-in-out  hover:scale-102"
+      >
+        Close
+      </button>)}
+     
+        {phase === "ended" && result !== "opponent_left" && (
+  <div className="text-center">
+    <button
+      onClick={handlePlayAgain}
+      disabled={playAgainRequested}
+      className={`border border-gray-300 rounded-lg shadow-lg bg-gradient-to-r from-yellow-200 to-red-200 px-4 py-3 transition duration-600 ease-in-out  hover:scale-102
+        ${playAgainRequested
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+        }`}
+    >
+      🔁 Play Again
+    </button>
+
+   
+  </div>
+        )}
+     </div>
+      {playAgainRequested && result !== "opponent_left" && (
+      <p className="text-sm text-gray-500 mt-2 animate-pulse">
+        Waiting for opponent…
+      </p>
+    )}
     </div>
   </div>
+)}
+
+      </div>
+
+
+    </div>
   );
 }
+
+function PlayerCard({ player, active, reverse, symbol }) {
+  const avatar = player.avatar || "/default.jpg";
+
+  return (
+    <div
+      className={`flex items-center gap-2 ${
+        reverse ? "flex-row-reverse" : ""
+      }`}
+    >
+      <img
+        src={avatar}
+        className={`w-12 h-12 rounded-full border-3 ${
+          active ? "border-green-500" : "border-gray-300"
+        }`}
+      />
+
+      <div className={`flex flex-col ${reverse ? "items-end" : "items-start"}`}>
+        <span className="font-semibold">{player.username}</span>
+        <span className="text-xs text-gray-500">
+          Playing as <b>{symbol}</b>
+        </span>
+      </div>
+    </div>
+  );
+}
+
