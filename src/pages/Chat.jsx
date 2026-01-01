@@ -9,13 +9,13 @@ import joinSound from "../assets/join.mp3";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import imageCompression from "browser-image-compression";
+import MusicPlayer from "../components/MusicPlayer";
 
 
 export default function Chat() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BASE_URL;
-
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [onlineCount, setOnlineCount] = useState(0);
@@ -35,6 +35,22 @@ export default function Chat() {
 
   const messageAudio = useRef(new Audio(notificationSound));
   const joinAudio = useRef(new Audio(joinSound));
+
+const extractYouTubeId = (text) => {
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/;
+  const match = text.match(regex);
+  return match ? match[1] : null;
+};
+
+async function fetchYoutubeTitle(videoId) {
+  const res = await fetch(
+    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+  );
+  const data = await res.json();
+  return data.title;
+}
+
 
   const compressImage = async (file) => {
   const options = {
@@ -119,7 +135,7 @@ useEffect(() => {
   const formatTime = date =>
     new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  /* ================= SEND MESSAGE (FIXED) ================= */
+/* ================= SEND MESSAGE (TEXT / IMAGE / MUSIC) ================= */
 const sendMessage = async () => {
   if (sending) return;
   if (!text.trim() && !imageFile) return;
@@ -127,12 +143,28 @@ const sendMessage = async () => {
   try {
     setSending(true);
 
+    // 🎵 1) CHECK YOUTUBE MUSIC LINK (TEXT ONLY)
+    const youtubeId = text ? extractYouTubeId(text.trim()) : null;
+
+    if (youtubeId && !imageFile) {
+      const title = await fetchYoutubeTitle(youtubeId);
+      socketRef.current.emit("sendMessage", {
+        type: "music",
+        youtubeId,
+        title
+      });
+
+      setText("");
+      return;
+    }
+
+    // 🖼️ 2) IMAGE MESSAGE
     if (imageFile) {
       const formData = new FormData();
       formData.append("image", imageFile);
 
       const res = await api.post("/chat/image", formData, {
-        onUploadProgress: progressEvent => {
+        onUploadProgress: (progressEvent) => {
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
@@ -141,11 +173,16 @@ const sendMessage = async () => {
       });
 
       socketRef.current.emit("sendMessage", {
+        type: "image",
         text: text.trim() || null,
         image: res.data.image,
       });
-    } else {
+    }
+
+    // 💬 3) NORMAL TEXT MESSAGE
+    else {
       socketRef.current.emit("sendMessage", {
+        type: "text",
         text: text.trim(),
         image: null,
       });
@@ -153,13 +190,15 @@ const sendMessage = async () => {
 
     socketRef.current.emit("stopTyping");
 
+    // 🧹 RESET
     setText("");
     setImageFile(null);
     setImagePreview(null);
     setUploadProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
+
   } catch (err) {
-    console.error("Upload failed", err);
+    console.error("Send failed", err);
   } finally {
     setSending(false);
     setUploadProgress(0);
@@ -333,6 +372,13 @@ const sendMessage = async () => {
                       alt="រលុបហើយអត់លុយបង់SERVER."
                     />
                   )}
+                  {/* 🎵 MUSIC MESSAGE */}
+                {msg.type === "music" && (
+                  <MusicPlayer
+                    youtubeId={msg.youtubeId}
+                    title={msg.title || "Shared Music"}
+                  />
+                )}
                 </div>
 
                 <p className="text-xs text-gray-400 mt-1">{formatTime(msg.createdAt)}</p>

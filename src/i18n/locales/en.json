@@ -16,5 +16,22 @@
     "logout": "Logout",
     "playGame": "Play Game",
     "Brand": "Lyheng Chat-Community"
+  },
+  "form":{
+    "username":"Username",
+    "Email":"Email",
+    "Password":"Password",
+    "ConfirmPassword":"Confirm Password",
+    "Avatar":"Avatar (optional)",
+    "AlreadyHave":"Already have an Account",
+    "Login":"Login",
+     "createAccount":"Create Account",
+    "join":"Join",
+    "register":"Register",
+    "registering":"Registering...",
+    "PHUserName":"Enter Your Name",
+    "PHEmail":"you@example.com",
+    "PHPassword":"Enter Your Password",
+    "PHConfirmPassword":"Confirm Your Password (Enter Again)"
   }
 }
