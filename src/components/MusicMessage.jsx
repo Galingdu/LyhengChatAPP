@@ -16,7 +16,6 @@ export default function MusicMessage({ title, youtubeId, duration = "—" }) {
         alert("📱 iPhone users: Open YouTube to hear this song.");
         localStorage.setItem(key, "true");
       }
-      return;
     }
 
     // 🔔 Notify others
