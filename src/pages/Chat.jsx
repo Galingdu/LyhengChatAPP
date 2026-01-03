@@ -227,6 +227,7 @@ const sendMessage = async () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+     localStorage.removeItem("ios_youtube_notice_shown"); // ✅ reset alert
     socketRef.current?.disconnect();
     navigate("/login");
   };

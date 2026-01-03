@@ -21,6 +21,7 @@ api.interceptors.response.use(
       console.warn("Token expired → logging out");
 
       localStorage.removeItem("token");
+      localStorage.removeItem("ios_youtube_notice_shown"); // ✅ reset
 
       // 🔄 Redirect safely
       if (window.location.pathname !== "/login") {
