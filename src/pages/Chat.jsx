@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import imageCompression from "browser-image-compression";
 import MusicPlayer from "../components/MusicPlayer";
+import MusicMessage from "../components/MusicMessage";
+
 
 
 export default function Chat() {
@@ -358,12 +360,15 @@ const sendMessage = async () => {
                   </div>
                 )}
 
-                <div className={`rounded-2xl px-3 py-2 ${
-                  msg.image ? "" :
-                  msg.sender?._id === myProfile?._id
-                    ? "bg-blue-600 text-white"
-                    : "bg-white"
-                }`}>
+                <div  className={`rounded-2xl ${
+    msg.type === "music"
+      ? "" // ❌ NO background for music
+      : msg.image
+      ? ""
+      : msg.sender?._id === myProfile?._id
+      ? "bg-blue-600 text-white px-3 py-2"
+      : "bg-white px-3 py-2"
+  }`}>
                   {msg.text && <p>{msg.text}</p>}
                   {msg.image && (
                     <img
@@ -373,12 +378,14 @@ const sendMessage = async () => {
                     />
                   )}
                   {/* 🎵 MUSIC MESSAGE */}
-                {msg.type === "music" && (
-                  <MusicPlayer
-                    youtubeId={msg.youtubeId}
-                    title={msg.title || "Shared Music"}
-                  />
-                )}
+                {/* 🎵 MUSIC (UI ONLY) */}
+  {msg.type === "music" && (
+    <MusicMessage
+      title={msg.title}
+      youtubeId={msg.youtubeId}
+      duration={msg.duration || "—"}
+    />
+  )}
                 </div>
 
                 <p className="text-xs text-gray-400 mt-1">{formatTime(msg.createdAt)}</p>
